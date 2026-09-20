@@ -1,0 +1,123 @@
+# config/techniques.yaml
+# MITRE ATT&CK Simulation Technique Catalog
+# Used by the validation engine to execute atomic payload scripts and verify log detections.
+
+techniques:
+  - id: "T1082"
+    name: "System Information Discovery"
+    tactic: "Discovery"
+    # Usage : Identifies kernel versions and operating system distributions.
+    payload: "uname -a && cat /etc/os-release"
+    expected_log_regex: "uname|os-release"
+
+  - id: "T1033"
+    name: "System Owner/User Discovery"
+    tactic: "Discovery"
+    # Usage : Checks the current active user name, user/group IDs, and logged-in users.
+    payload: "whoami && id && w"
+    expected_log_regex: "whoami"
+
+  - id: "T1057"
+    name: "Process Discovery"
+    tactic: "Discovery"
+    # Usage : Lists all active system processes running on the machine.
+    payload: "ps aux"
+    expected_log_regex: "ps aux"
+
+  - id: "T1016"
+    name: "Network Configuration Discovery"
+    tactic: "Discovery"
+    # Usage : Collects active IP addresses, subnets, interfaces, and network configurations.
+    payload: "ip a 2>/dev/null || ifconfig"
+    expected_log_regex: "ip a|ifconfig"
+
+  - id: "T1049"
+    name: "System Network Connections"
+    tactic: "Discovery"
+    # Usage : Checks open TCP/UDP sockets, listening routing ports, and active network connections.
+    payload: "ss -tulpn 2>/dev/null || netstat -tuln"
+    expected_log_regex: "ss -tulpn|netstat"
+
+  - id: "T1059.004"
+    name: "Unix Shell Execution"
+    tactic: "Execution"
+    # Usage : Tests arbitrary command execution through an explicit non-interactive Unix shell.
+    payload: "bash -c 'echo simulation_exec_test'"
+    expected_log_regex: "simulation_exec_test"
+
+  - id: "T1059.001"
+    name: "Script Execution"
+    tactic: "Execution"
+    # Usage : Runs an inline Python script payload to execute local operating system strings.
+    payload: "python3 -c 'import os; print(\"python_exec_test\")'"
+    expected_log_regex: "python_exec_test"
+
+  - id: "T1053.003"
+    name: "Cron Persistence Simulation"
+    tactic: "Persistence"
+    # Usage : Registers a rogue persistent scheduled script directly into the user's crontab file.
+    payload: "crontab -l 2>/dev/null; echo '* * * * * /tmp/sim_persistence.sh' | crontab -"
+    expected_log_regex: "crontab"
+
+  - id: "T1543.002"
+    name: "Systemd Service Persistence"
+    tactic: "Persistence"
+    # Usage : Attempts to plant a persistent background operational layout by injecting a custom systemd service file.
+    payload: "echo '[Unit]\nDescription=Simulated Persistence' > /etc/systemd/system/sim.service 2>/dev/null || true"
+    expected_log_regex: "systemd/system/sim.service"
+
+  - id: "T1547.001"
+    name: "Startup Script Persistence"
+    tactic: "Persistence"
+    # Usage : Appends a persistent payload hook into the user's bash shell configuration configuration profile.
+    payload: "echo '# simulated persistence' >> ~/.bashrc"
+    expected_log_regex: "bashrc"
+
+  - id: "T1070.004"
+    name: "File Deletion Evasion"
+    tactic: "Defense Evasion"
+    # Usage : Creates and instantly deletes a temporary file to erase the footprint of malware artifacts.
+    payload: "touch /tmp/evade.tmp && rm -f /tmp/evade.tmp"
+    expected_log_regex: "rm -f /tmp/evade.tmp"
+
+  - id: "T1070.003"
+    name: "Clear Command History"
+    tactic: "Defense Evasion"
+    # Usage : Wipes out the current active session shell history file to hide analyst tracks.
+    payload: "history -c 2>/dev/null || true"
+    expected_log_regex: "history -c"
+
+  - id: "T1140"
+    name: "Deobfuscate / Decode Files"
+    tactic: "Defense Evasion"
+    # Usage : Decodes a base64 encoded text layout directly in the terminal to simulate payload unpacked.
+    payload: "echo 'YWR2ZXJzYXJ5X3NpbXVsYXRpb24=' | base64 -d"
+    expected_log_regex: "base64 -d"
+
+  - id: "T1552.001"
+    name: "Credentials in Files Search"
+    tactic: "Credential Access"
+    # Usage : Scans critical user identity configuration profiles for plain-text password references.
+    payload: "grep -i 'password' /etc/passwd 2>/dev/null || true"
+    expected_log_regex: "grep.*password"
+
+  - id: "T1003"
+    name: "OS Credential Dumping"
+    tactic: "Credential Access"
+    # Usage : Tries to read the sensitive Linux shadow file containing protected system password hashes.
+    payload: "cat /etc/shadow 2>/dev/null || true"
+    expected_log_regex: "cat /etc/shadow"
+
+  - id: "T1119"
+    name: "Automated Data Collection"
+    tactic: "Collection"
+    # Usage : Packages and archives local system logs into a compressed staging file for later exfiltration.
+    payload: "tar -cf /tmp/test_archive.tar /var/log/syslog 2>/dev/null || true"
+    expected_log_regex: "tar -cf"
+
+  - id: "T1041"
+    name: "Exfiltration over C2 Channel"
+    tactic: "Exfiltration"
+    # Usage : Sends collected data via an outbound POST web request mimicking external command and control servers.
+    payload: "curl -s -X POST -d 'data=exfil_test' http://127.0.0 2>/dev/null || true"
+    expected_log_regex: "exfil_test"
