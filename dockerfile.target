@@ -1,0 +1,28 @@
+
+# this is for the test bed ex: this is user (victim) lap 
+
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install essential OS utilities, system services, and auditing tools
+RUN apt-get update && apt-get install -y \
+    bash \
+    curl \
+    cron \
+    rsyslog \
+    auditd \
+    iproute2 \
+    net-tools \
+    python3 \
+    sudo \
+    procps \
+    && rm -rf /var/lib/apt/lists/*
+
+# Initialize the log mirror file where execution telemetry is collected
+RUN touch /var/log/adversary_execution.log && chmod 666 /var/log/adversary_execution.log
+
+WORKDIR /root
+
+# Start background logging services and stream logs to keep the container active
+CMD ["sh", "-c", "rsyslogd && cron && tail -f /var/log/syslog /var/log/adversary_execution.log"]
